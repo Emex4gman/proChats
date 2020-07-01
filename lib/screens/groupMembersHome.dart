@@ -103,10 +103,11 @@ class _GroupMembersHomeState extends State<GroupMembersHome> with SingleTickerPr
               Map chat = chats[4];
               return ChatItem(
                 dp: chat['dp'],
-                name: member['userId'],
+                name: member['userName'] ?? 'User ${index + 1}',
+                //name: 'User ${index + 1}',
                 isOnline: chat['isOnline'],
                 counter: "Remove",
-                msg: "The last rocket🚀",
+                msg: "${member['membershipDuration']} days plan 🚀",
                 time: Jiffy(member['expiresOn'].toDate()).fromNow().toString(),
               );
             },

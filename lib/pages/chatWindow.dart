@@ -142,7 +142,8 @@ scrollToBottomFun(){
                     ),
                     SizedBox(width: 10),
                       Visibility(
-                      visible: widget.chatOwnerId == widget.userId,
+                        visible: true,
+                     // visible: widget.chatOwnerId == widget.userId,
                       child: FlatButton(
                 child: Text(
                   "Members",
@@ -152,6 +153,7 @@ scrollToBottomFun(){
                 ),
                 color: Colors.blueAccent,
                 onPressed: (){
+                  print('check for prone ${widget.chatOwnerId}  ccc ${widget.userId}');
                        Navigator.push(
                                     context,
                                    new  MaterialPageRoute(

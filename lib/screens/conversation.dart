@@ -4,18 +4,20 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:intl/intl.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:prochats/controllers/notificationController.dart';
 import 'package:prochats/pages/feedBacker.dart';
 import 'package:prochats/pages/imageEditor.dart';
+import 'package:prochats/screens/groupMembersHome.dart';
 import 'package:prochats/util/data.dart';
 import 'dart:math';
 import 'package:prochats/widgets/chat_bubble.dart';
 
 class Conversation extends StatefulWidget {
-  Conversation({Key key, this.chatId,this.groupSportCategory, this.userId,this.groupTitle,this.senderMailId, this.chatType, this.waitingGroups, this.approvedGroups, this.chatOwnerId, this.approvedGroupsJson, this.AllDeviceTokens, this.FDeviceTokens});
-  final String chatId, userId,chatType, chatOwnerId, senderMailId, groupTitle ;
-  List waitingGroups, approvedGroups, AllDeviceTokens,FDeviceTokens, groupSportCategory;
+  Conversation({Key key, this.chatId,this.groupSportCategory,this.userId,this.groupLogo,this.groupTitle,this.senderMailId, this.chatType, this.waitingGroups, this.approvedGroups,this.followers, this.chatOwnerId, this.approvedGroupsJson, this.AllDeviceTokens, this.FDeviceTokens});
+  final String chatId, userId,chatType, chatOwnerId, senderMailId, groupTitle, groupLogo ;
+  List waitingGroups, approvedGroups, AllDeviceTokens,FDeviceTokens, groupSportCategory, followers;
   List approvedGroupsJson;
 
   @override
@@ -102,7 +104,7 @@ scrollToBottomFun(){
                     ),
                     SizedBox(height: 5),
                     Text(
-                      "Online",
+                      "${widget.followers.length} Followers",
                       style: TextStyle(
                         fontWeight: FontWeight.w400,
                         fontSize: 11,
@@ -140,17 +142,64 @@ if (snapShot == null || !snapShot.exists) {
              await   Navigator.push(
                                   context,
                                  new  MaterialPageRoute(
-                                      builder: (BuildContext context) => PowerFeedbacker(groupCategories: widget.groupSportCategory ,groupId: widget.chatId,groupTitle: widget.groupTitle, votingBalletHeapData: votingBalletHeapData),
+                                      builder: (BuildContext context) => PowerFeedbacker(groupCategories: widget.groupSportCategory ,groupId: widget.chatId,groupTitle: widget.groupTitle, votingBalletHeapData: votingBalletHeapData ?? []),
                                       ),
                                );
             },
           ),
-          IconButton(
-            icon: Icon(
-              Icons.more_horiz,
-            ),
-            onPressed: (){},
+
+          // display for group members
+          Visibility(
+            visible: widget.chatOwnerId != widget.userId,
+            child:
+          new PopupMenuButton(
+            onSelected: (value){
+              print('selected value si   $value');
+            },
+              itemBuilder: (BuildContext context) => <PopupMenuItem<String>>[
+                    const 
+                    PopupMenuItem(
+                      value: "Report",
+                      child: Text("Report"),
+                    ),
+                    PopupMenuItem(
+                      value: "Exit Group",
+                      child: Text("Exit Group"),
+                    ),
+                  ]),
           ),
+          // display for group owners
+          Visibility(
+            visible: widget.chatOwnerId == widget.userId,
+            child:
+          new PopupMenuButton(
+            onSelected: (value){
+              print('selected value si   $value');
+                 Navigator.push(
+                                    context,
+                                   new  MaterialPageRoute(
+                                        builder: (BuildContext context) => 
+                                        GroupMembersHome(groupMembersJson : widget.approvedGroupsJson ?? [], chatId: widget.chatId),
+                                        ),
+                                 );
+            },
+              itemBuilder: (BuildContext context) => <PopupMenuItem<String>>[
+                    const 
+                    PopupMenuItem(
+                      value: "Expired Memberships",
+                      child: Text("Expired Membersips"),
+                    ),
+                    PopupMenuItem(
+                      value: "Member Feedback",
+                      child: Text("Member Feedback"),
+                    ),
+                    PopupMenuItem(
+                      value: "Edit Details",
+                      child: Text("Starred message"),
+                    ),
+                  ]),
+          )
+        
         ],
       ),
 
@@ -178,26 +227,18 @@ if (snapShot == null || !snapShot.exists) {
                       var indexVal = index;
                       print('value of messages are ${ds['messages'] ?? "empty"}');
                       scrollToBottomFun();
-                  // return ChatBubble(
-                  //   message: msg['type'] == "text"
-                  //       ?messages[random.nextInt(10)]
-                  //       :snapshot.data['messages'][indexVal]['imageUrl'],
-                  //   username: msg["username"],
-                  //   time: msg["time"],
-                  //   type: msg['type'],
-                  //   replyText: msg["replyText"],
-                  //   isMe: msg['isMe'],
-                  //   isGroup: msg['isGroup'],
-                  //   isReply: msg['isReply'],
-                  //   replyName: name,
-                  // );
+                        // var datestamp = new DateFormat("dd-MM'T'HH:mm");
+                        var datestamp = new DateFormat("HH:mm");
+
+          
 
                      return ChatBubble(
                     message: snapshot.data['messages'][indexVal]['type'] == "text"
                         ?snapshot.data['messages'][indexVal]['messageBody']
                         :snapshot.data['messages'][indexVal]['imageUrl'],
                     username: widget.userId,
-                    time: Jiffy(snapshot.data['messages'][indexVal]['date'].toDate()).fromNow().toString(),
+                    time: datestamp.format(snapshot.data['messages'][indexVal]['date'].toDate()).toString(),
+                    //time: Jiffy(snapshot.data['messages'][indexVal]['date'].toDate()).fromNow().toString(),
                     type: snapshot.data['messages'][indexVal]['type'],
                     replyText:"",
                     isMe: true,
@@ -241,7 +282,7 @@ if (snapShot == null || !snapShot.exists) {
                                  Navigator.push(
                                     context,
                                    new  MaterialPageRoute(
-                                        builder: (BuildContext context) => ImageEditorPage(chatId: widget.chatId,userId: widget.userId,chatType: "Image",),
+                                        builder: (BuildContext context) => ImageEditorPage(chatId: widget.chatId,userId: widget.userId,chatType: "Image", groupLogo: widget.groupLogo),
                                         ),
                                  );
                           },

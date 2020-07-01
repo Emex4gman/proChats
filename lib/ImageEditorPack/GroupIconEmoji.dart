@@ -31,19 +31,38 @@ class _EmojiViewState extends State<EmojiView> {
       child: GestureDetector(
           onTap: widget.ontap,
           onPanUpdate: widget.onpanupdate,
-          // child: Text(widget.value,
-          //     textAlign: widget.align,
-          //     style: TextStyle(
-          //       fontSize: widget.fontsize,
-          //     ))
-          // child: Image.asset(widget.value)
-          child: Container(
-               height: 100,
-               width: 100,
-              //  color: Colors.red,
-               child: Image.asset(widget.value),
-            
-            )
+          child: 
+          
+          Row(
+            children: <Widget>[
+              Visibility(
+                visible: widget.value == null,
+                child:
+              Container(
+                   height: 100,
+                   width: 100,
+                  //  color: Colors.red,
+                   child: Image.asset(widget.value),
+                ),
+              ),
+              Visibility(
+                visible: widget.value != null,
+                child:
+              Container(
+                   height: 100,
+                   width: 100,
+                  decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkImage(widget.value),
+                          fit: BoxFit.cover,
+                        ),
+                        borderRadius: BorderRadius.circular(20.0),
+                      )
+                
+                ),
+              ),
+            ],
+          )
               
               ),
     );

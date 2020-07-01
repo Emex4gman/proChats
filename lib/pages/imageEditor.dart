@@ -10,8 +10,8 @@ import 'package:prochats/ImageEditorPack/image_editorHome.dart';
 
 
 class ImageEditorPage extends StatefulWidget {
-  ImageEditorPage({Key key, this.chatId,this.userId, this.chatType});
-  final String chatId, userId,chatType;
+  ImageEditorPage({Key key, this.chatId,this.userId, this.chatType, this.groupLogo});
+  final String chatId, userId,chatType, groupLogo;
   @override
   _ImageEditorPageState createState() => _ImageEditorPageState();
 }
@@ -28,6 +28,7 @@ class _ImageEditorPageState extends State<ImageEditorPage> {
       return MyImageEditorPro(
         appBarColor: Colors.blue,
         bottomBarColor: Colors.blue,
+        groupLogo: widget.groupLogo,
       );
     })).then((geteditimage) {
       if (geteditimage != null) {
@@ -65,8 +66,6 @@ class _ImageEditorPageState extends State<ImageEditorPage> {
         onPressed: () async {
           print('i was clicked');
                DateTime now = new DateTime.now();
-        var datestamp = new DateFormat("yyyyMMdd'T'HHmmss");
-        String currentdate = datestamp.format(now);
       
     final StorageReference firebaseStorageRef = await FirebaseStorage.instance.ref().child('myimage1.jpg');
     final StorageUploadTask uploadTask = await firebaseStorageRef.putFile(_image);
@@ -74,7 +73,7 @@ class _ImageEditorPageState extends State<ImageEditorPage> {
     String url = dowurl.toString();
     print('uploaded url is $url');
         try {
-                        var body ={ "imageUrl":url, "date": "","author": widget.userId, "type": "Image" };
+                        var body ={ "imageUrl":url, "date": now,"author": widget.userId, "type": "Image" };
                       await  Firestore.instance.collection('groups').document(widget.chatId).updateData({ 'messages' : FieldValue.arrayUnion([body])});
                      _image = null;
                       } catch (e) {

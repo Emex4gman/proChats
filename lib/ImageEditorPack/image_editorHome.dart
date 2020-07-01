@@ -34,7 +34,8 @@ SignatureController _controller =
 class MyImageEditorPro extends StatefulWidget {
   final Color appBarColor;
   final Color bottomBarColor;
-  MyImageEditorPro({this.appBarColor, this.bottomBarColor});
+  final String groupLogo;
+  MyImageEditorPro({this.appBarColor, this.bottomBarColor, this.groupLogo});
 
   @override
   _MyImageEditorProState createState() => _MyImageEditorProState();
@@ -268,7 +269,8 @@ class _MyImageEditorProState extends State<MyImageEditorPro> {
                                     });
                                   },
                                   // value: f.value.toString(),
-                                  value : "assets/background.png",
+                                  // value : "assets/background.png",
+                                  value: widget.groupLogo,
                                   fontsize: fontsize[f.key].toDouble(),
                                   align: TextAlign.center,
                                 )

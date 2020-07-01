@@ -11,7 +11,8 @@ import 'package:prochats/widgets/post_item.dart';
 class PowerFeedbacker extends StatefulWidget {
    PowerFeedbacker({Key key, this.groupId, this.groupTitle, this.groupCategories, this.votingBalletHeapData}) : super(key: key);
       final String groupId, groupTitle;
-      final List groupCategories, votingBalletHeapData;
+      final List groupCategories;
+      List votingBalletHeapData;
   @override
   _PowerFeedbackerState createState() => _PowerFeedbackerState();
 }
@@ -19,107 +20,90 @@ class PowerFeedbacker extends StatefulWidget {
 class _PowerFeedbackerState extends State<PowerFeedbacker> {
   String selectedValue;
    StateModel appState; 
-   List snapShot;
-
-  @override
-    void initState() {
-      // votingLoading(widget.groupId);
-    }
-votingLoading(groupId) async{
-
-//  snapShot = await Firestore.instance
-//   .collection('votingBalletHeap')
-//   .document(groupId)
-//   .get();
-
-// this creates feedback entry for newGroup or a group which does not have entry yet in DB
-// if (snapShot == null || !snapShot.exists) {
-
-// }else{
-//   // votingBalletHeapData = await  snapShot.data['VotingStats'];
-//   // print('full data of heap is ${votingBalletHeapData}');
-//   // List reqGroupA =  data.where((i) => i["gameId"] == matchId).toList();
-//   // List homeGroup =  data.where((i) => i["gameId"] != matchId).toList();
-// }
-
-}
- 
+   List snapShot; 
+  
+  
   votingBallet(matchId, groupId, voterId, votedFor,category, )async{
-
-// final snapShot = await Firestore.instance
-//   .collection('votingBalletHeap')
-//   .document(groupId)
-//   .get();
-
 // this creates feedback entry for newGroup or a group which does not have entry yet in DB
         print('values of real ${widget.votingBalletHeapData}');
 snapShot = widget.votingBalletHeapData;
-if (snapShot == null) {
+if (snapShot.length == 0) {
   // Document with id == docId doesn't exist.
+  var body;
    if(votedFor == "Win"){
-    Firestore.instance.collection('votingBalletHeap').document(groupId).setData({ 'VotingStats' : [{'Win': 1, 'Loss': 0, 'Even': 0, 'TotalVotes': 1, 'gameId':matchId,'VotedBy' : [voterId]}]});
+     body = { 'VotingStats' : [{'Win': 1, 'Loss': 0, 'Even': 0, 'TotalVotes': 1, 'gameId':matchId,'VotedBy' : [voterId]}]};
+  
    } else if(votedFor == "Even"){
-    Firestore.instance.collection('votingBalletHeap').document(groupId).setData({ 'VotingStats' : FieldValue.arrayUnion([{'Win': 1, 'Loss': 0, 'Even': 0, 'TotalVotes': 1, 'gameId':matchId,'VotedBy' : FieldValue.arrayUnion([voterId])}])});
+     body = { 'VotingStats' : FieldValue.arrayUnion([{'Win': 0, 'Loss': 0, 'Even': 1, 'TotalVotes': 1, 'gameId':matchId,'VotedBy' : FieldValue.arrayUnion([voterId])}])};
     }
    else if(votedFor == "Loss"){ 
-    Firestore.instance.collection('votingBalletHeap').document(groupId).setData({ 'VotingStats' : FieldValue.arrayUnion([{'Win': 1, 'Loss': 0, 'Even': 0, 'TotalVotes': 1, 'gameId':matchId, 'VotedBy' : FieldValue.arrayUnion([voterId])}])});
+    body ={ 'VotingStats' : FieldValue.arrayUnion([{'Win': 0, 'Loss': 1, 'Even': 0, 'TotalVotes': 1, 'gameId':matchId, 'VotedBy' : FieldValue.arrayUnion([voterId])}])};
    }
+    widget.votingBalletHeapData.add(body);
+    Firestore.instance.collection('votingBalletHeap').document(groupId).setData(body);
 
 }else{
   print('snapshot value is ${snapShot}');
-  var data = await  snapShot;
-
-     if(votedFor == "Win"){
+  var data = snapShot;
    List reqGroupA =  data.where((i) => i["gameId"] == matchId).toList();
    List homeGroup =  data.where((i) => i["gameId"] != matchId).toList();
 
-   print('resGroup ${reqGroupA}');
-   print('homeGroup ${homeGroup}');
-
-   
 if(reqGroupA.length == 0){
-  // insert default value to 1
-
+  // first vote as no other vote exists
   var defaultBody = {'Win': 1, 'gameId':matchId, 'Loss': 0, 'Even': 0, 'TotalVotes': 1, 'VotedBy': [voterId]};
-  widget.votingBalletHeapData.add(defaultBody);
+   setState(() {
+     print('i was added');
+     widget.votingBalletHeapData.add(defaultBody);
+   });
  Firestore.instance.collection('votingBalletHeap').document(groupId).updateData({ 'VotingStats' : FieldValue.arrayUnion([defaultBody])});
 }else{
-  var reqGroup = reqGroupA[0];
+    var modifiedBody;
+     var reqGroup = reqGroupA[0];
   var VotersList = [voterId];
   VotersList.addAll(reqGroup['VotedBy']);
 //  VotersList =reqGroup['VotedBy'].toList();
   print('VotersList ${VotersList}');
-   var modifiedBody = {'Win': reqGroup['Win']+ 1, 'gameId':reqGroup['gameId'], 'Loss': 0, 'Even': 0, 'TotalVotes': reqGroup['TotalVotes']+ 1, 'VotedBy': VotersList};
-   homeGroup.add(modifiedBody);
+
+   print('resGroup ${reqGroupA}');
+   print('homeGroup ${homeGroup}');
+
+     if(votedFor == "Win"){
+        modifiedBody = {'Win': reqGroup['Win']+ 1, 'gameId':reqGroup['gameId'], 'Loss': reqGroup['Loss'], 'Even': reqGroup['Even'], 'TotalVotes': reqGroup['TotalVotes']+ 1, 'VotedBy': VotersList};
+
+  homeGroup.add(modifiedBody);
    setState(() {
-     widget.votingBalletHeapData.add(modifiedBody);
+     widget.votingBalletHeapData =homeGroup;
    });
   
 
    print("readl value check ${widget.votingBalletHeapData}");
   Firestore.instance.collection('votingBalletHeap').document(groupId).setData({ 'VotingStats' : homeGroup});
-}
-
-  //        var votedData = data.map((check)=> 
-  // check['gameId']==matchId ? {'Win': check['Win']+ 1, 'gameId':check['gameId'], 'Loss': 0, 'Even': 0, 'TotalVotes': check['TotalVotes']+ 1, 'VotedBy': check['VotedBy'].add('voterId')}:  check
-
-  
-  
-  // ).toList();
-
-  //print('value is ${votedData}');
-          // Firestore.instance.collection('votingBalletHeap').document(groupId).updateData({'Win': FieldValue.increment(1), 'TotalVotes': FieldValue.increment(1)});
-        //    Firestore.instance.collection('votingBalletHeap').document(groupId).setData({ 'VotingStats' : FieldValue.arrayUnion([{'Win': 1, 'Loss': 0, 'Even': 0, 'TotalVotes': 1, 'gameId':matchId,'VotedBy' : FieldValue.arrayUnion([voterId])}])});
-       
-       
-       
-       // Firestore.instance.collection('votingBalletHeap').document(groupId).setData({ 'VotingStats' : [votedData[0]]});
       }          
        else if(votedFor == "Even"){
-          Firestore.instance.collection('votingBalletHeap').document(groupId).updateData({'Even': FieldValue.increment(1), 'TotalVotes': FieldValue.increment(1)});
+        modifiedBody = {'Win': reqGroup['Win'], 'gameId':reqGroup['gameId'], 'Loss': reqGroup['Loss'], 'Even': reqGroup['Even']+ 1, 'TotalVotes': reqGroup['TotalVotes']+ 1, 'VotedBy': VotersList};
+
+  homeGroup.add(modifiedBody);
+   setState(() {
+      widget.votingBalletHeapData =homeGroup;
+   });
+  
+
+   print("readl value check ${widget.votingBalletHeapData}");
+  Firestore.instance.collection('votingBalletHeap').document(groupId).setData({ 'VotingStats' : homeGroup});
       } else if(votedFor == "Loss"){
-          Firestore.instance.collection('votingBalletHeap').document(groupId).updateData({'Loss': FieldValue.increment(1), 'TotalVotes': FieldValue.increment(1)});
+        modifiedBody = {'Win': reqGroup['Win'], 'gameId':reqGroup['gameId'], 'Loss': reqGroup['Loss'] + 1, 'Even': reqGroup['Even'], 'TotalVotes': reqGroup['TotalVotes']+ 1, 'VotedBy': VotersList};
+
+  homeGroup.add(modifiedBody);
+   setState(() {
+      widget.votingBalletHeapData =homeGroup;
+   });
+  
+
+   print("readl value check ${widget.votingBalletHeapData}");
+  Firestore.instance.collection('votingBalletHeap').document(groupId).setData({ 'VotingStats' : homeGroup});
       }
+
+}
 }      
   }
   @override
@@ -155,8 +139,7 @@ if(reqGroupA.length == 0){
         itemCount: snapshot.data.documents.length,
         itemBuilder: (BuildContext context, int index) {
           var ds = snapshot.data.documents[index].data;
-        print('values of real ${widget.votingBalletHeapData}');
-
+        print('values of real me ${widget.votingBalletHeapData}');
           List reqGroupA =  widget.votingBalletHeapData.where((i) => i["gameId"] == ds['id']).toList();
           Map post = posts[index];
           if(reqGroupA.length == 0){
@@ -242,7 +225,7 @@ return QuestionCard(true,{'TotalVotes': 1,'Loss': 0, 'Even': 0, 'Win': 1},ds['te
             ),
           );
   }
-  Widget QuestionCard(vistibleQuestion,votesResultsBallets,team1Url,team1Name, team2Url, team2Name, category, matchId , groupId,voterId,){
+  Widget QuestionCard(visiableQuestion,votesResultsBallets,team1Url,team1Name, team2Url, team2Name, category, matchId , groupId,voterId,){
     return Card(
                   elevation: 8,
                   shape: RoundedRectangleBorder(
@@ -319,20 +302,16 @@ return QuestionCard(true,{'TotalVotes': 1,'Loss': 0, 'Even': 0, 'Win': 1},ds['te
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: <Widget>[
                                              Visibility(
-                                                        visible: vistibleQuestion,
+                                                        visible: visiableQuestion,
                                                         child: 
                                             Column(
                                               children: <Widget>[
                                                 GestureDetector(
 
                                                   onTapUp: (detail) {
-                                                    // Navigator.of(context).push(
-                                                    //     MaterialPageRoute(
-                                                    //         builder:
-                                                    //             (BuildContext context) =>
-                                                    //                 LastPage(
-                                                    //                   statusType: 'Unhappy',
-                                                    //                 )));
+                                           
+                                                  
+
                                                     votingBallet(matchId , groupId,voterId ,'Win', category);
                                                     if(selectedValue == null){
                                                       print('value is null');
@@ -340,9 +319,7 @@ return QuestionCard(true,{'TotalVotes': 1,'Loss': 0, 'Even': 0, 'Win': 1},ds['te
                                                       selectedValue = 'Gain';
                                                     });
                                                     }
-                                                    print('Gain value ${selectedValue != 'Gain'} , ${selectedValue != null}');
-                                                    print('Even value ${selectedValue != 'Even'} , ${selectedValue != null}');
-                                                    print('Loss value ${selectedValue != 'Even'} , ${selectedValue != null}');
+
                                                     //  setState(() {
                                                     //   selectedValue = 'Gain';
                                                     // });
@@ -366,7 +343,7 @@ return QuestionCard(true,{'TotalVotes': 1,'Loss': 0, 'Even': 0, 'Win': 1},ds['te
                                             ),
                                              ),
                                               Visibility(
-                                                        visible: vistibleQuestion,
+                                                        visible: visiableQuestion,
                                                         child: 
                                             Column(
                                               children: <Widget>[
@@ -403,7 +380,7 @@ return QuestionCard(true,{'TotalVotes': 1,'Loss': 0, 'Even': 0, 'Win': 1},ds['te
                                             ),
                                               ),
                                                Visibility(
-                                                        visible: vistibleQuestion,
+                                                        visible: visiableQuestion,
                                                         child: 
                                             Column(
                                               children: <Widget>[
@@ -444,7 +421,7 @@ return QuestionCard(true,{'TotalVotes': 1,'Loss': 0, 'Even': 0, 'Win': 1},ds['te
                                       SizedBox(height:18),
                                   
                                   Visibility(
-                                    visible: !vistibleQuestion,
+                                    visible: !visiableQuestion,
                                     child:
                           Column(
                             children: <Widget>[

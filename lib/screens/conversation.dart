@@ -10,15 +10,18 @@ import 'package:prochats/controllers/notificationController.dart';
 import 'package:prochats/pages/feedBacker.dart';
 import 'package:prochats/pages/imageEditor.dart';
 import 'package:prochats/screens/groupMembersHome.dart';
+import 'package:prochats/screens/joinPremium.dart';
+import 'package:prochats/screens/joinRequestApproval.dart';
 import 'package:prochats/util/data.dart';
 import 'dart:math';
 import 'package:prochats/widgets/chat_bubble.dart';
 
 class Conversation extends StatefulWidget {
-  Conversation({Key key, this.chatId,this.groupSportCategory,this.userId,this.groupLogo,this.groupTitle,this.senderMailId, this.chatType, this.waitingGroups, this.approvedGroups,this.followers, this.chatOwnerId, this.approvedGroupsJson, this.AllDeviceTokens, this.FDeviceTokens});
+  Conversation({Key key, this.groupFullDetails,this.chatId,this.groupSportCategory,this.userId,this.groupLogo,this.groupTitle,this.senderMailId, this.chatType, this.waitingGroups, this.approvedGroups,this.followers, this.chatOwnerId, this.approvedGroupsJson, this.AllDeviceTokens, this.FDeviceTokens});
   final String chatId, userId,chatType, chatOwnerId, senderMailId, groupTitle, groupLogo ;
   List waitingGroups, approvedGroups, AllDeviceTokens,FDeviceTokens, groupSportCategory, followers;
   List approvedGroupsJson;
+  final groupFullDetails;
 
   @override
   _ConversationState createState() => _ConversationState();
@@ -155,9 +158,21 @@ if (snapShot == null || !snapShot.exists) {
           new PopupMenuButton(
             onSelected: (value){
               print('selected value si   $value');
+              if(value == "Profile"){
+                   Navigator.push(
+                                  context,
+                                 new  MaterialPageRoute(
+                                      builder: (BuildContext context) => JoinPremiumGroup(chatId: widget.chatId,userId: widget.userId,lock: false,title: widget.groupTitle,feeArray: widget.groupFullDetails['FeeDetails'] ?? [], paymentScreenshotNo: widget.groupFullDetails['paymentNo'] ?? "", avatarUrl: widget.groupFullDetails['logo']?? "" ),
+                                      ),
+                               );
+              }
             },
               itemBuilder: (BuildContext context) => <PopupMenuItem<String>>[
                     const 
+                    PopupMenuItem(
+                      value: "Profile",
+                      child: Text("Profile"),
+                    ),
                     PopupMenuItem(
                       value: "Report",
                       child: Text("Report"),
@@ -175,6 +190,15 @@ if (snapShot == null || !snapShot.exists) {
           new PopupMenuButton(
             onSelected: (value){
               print('selected value si   $value');
+              if(value == "Approve Payments"){
+               Navigator.push(
+                                    context,
+                                   new  MaterialPageRoute(
+                                        builder: (BuildContext context) => 
+                                        JoinRequestApproval(chatId: widget.chatId,),
+                                        ),
+                                 );
+              } else if (value == "Expired Memberships"){
                  Navigator.push(
                                     context,
                                    new  MaterialPageRoute(
@@ -182,9 +206,14 @@ if (snapShot == null || !snapShot.exists) {
                                         GroupMembersHome(groupMembersJson : widget.approvedGroupsJson ?? [], chatId: widget.chatId),
                                         ),
                                  );
+              }
             },
               itemBuilder: (BuildContext context) => <PopupMenuItem<String>>[
                     const 
+                    PopupMenuItem(
+                      value: "Approve Payments",
+                      child: Text("Approve Payments"),
+                    ),
                     PopupMenuItem(
                       value: "Expired Memberships",
                       child: Text("Expired Membersips"),
@@ -352,6 +381,62 @@ if (snapShot == null || !snapShot.exists) {
           ],
         ),
       ),
+      
+      floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerDocked,
+     floatingActionButton: Row(
+       
+       children: <Widget>[
+         Visibility(
+           visible: !widget.waitingGroups.contains(widget.chatId) && !widget.approvedGroups.contains(widget.chatId) ,
+           child:
+         FloatingActionButton.extended(
+  onPressed: () {
+          Navigator.push(
+                                  context,
+                                 new  MaterialPageRoute(
+                                      builder: (BuildContext context) => JoinPremiumGroup(chatId: widget.chatId,userId: widget.userId,lock: false,title: widget.groupTitle,feeArray: widget.groupFullDetails['FeeDetails'] ?? [], paymentScreenshotNo: widget.groupFullDetails['paymentNo'] ?? "", avatarUrl: widget.groupFullDetails['logo']?? "" ),
+                                      ),
+                               );
+  },
+  icon: Icon(Icons.save),
+  label: Text(!widget.waitingGroups.contains(widget.chatId) ? "Subscribe Rs 100/-" : "Under Review"),
+),
+         ),
+     Visibility(
+      visible: widget.approvedGroups.contains(widget.chatId), 
+      child:
+      FloatingActionButton.extended(
+  onPressed: () async {
+           var  snapShot = await Firestore.instance
+  .collection('votingBalletHeap')
+  .document(widget.chatId)
+  .get();
+
+// this creates feedback entry for newGroup or a group which does not have entry yet in DB
+if (snapShot == null || !snapShot.exists) {
+
+}else{
+  votingBalletHeapData = await  snapShot.data['VotingStats'];
+  print('full data of heap is ${votingBalletHeapData}');
+  // List reqGroupA =  data.where((i) => i["gameId"] == matchId).toList();
+  // List homeGroup =  data.where((i) => i["gameId"] != matchId).toList();
+}
+              // powerPredictor
+             await   Navigator.push(
+                                  context,
+                                 new  MaterialPageRoute(
+                                      builder: (BuildContext context) => PowerFeedbacker(groupCategories: widget.groupSportCategory ,groupId: widget.chatId,groupTitle: widget.groupTitle, votingBalletHeapData: votingBalletHeapData ?? []),
+                                      ),
+                               );
+  },
+  icon: Icon(Icons.save),
+  label: Text("Feedback"),
+),
+     ),
+       ],
+     ),
+
     );
   }
 }

@@ -345,7 +345,7 @@ Widget row(User1 user) {
                                     autofocus: false,
                                     obscureText: true,
                                     controller: _password,
-                                    validator: Validator.validateReferralCode,
+                                    // validator: Validator.va,
                                     decoration: InputDecoration(
                                         labelText: 'Password',
                                         labelStyle: TextStyle(

@@ -31,11 +31,11 @@ class _MainScreenState extends State<MainScreen> {
         controller: _pageController,
         onPageChanged: onPageChanged,
         children: <Widget>[
-          ChatsOld(),
-          Chats(uId: userId, uEmailId: email,),
+          // ChatsOld(),
+          // Home(),
           GroupsSearch(uId: userId, uEmailId: email,),
-          Home(),
-          Notifications(),
+          Chats(uId: userId, uEmailId: email,),
+          // Notifications(),
           Profile(),
         ],
       ),
@@ -55,19 +55,19 @@ class _MainScreenState extends State<MainScreen> {
         child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           items: <BottomNavigationBarItem>[
-             BottomNavigationBarItem(
-              icon: Icon(
-                Icons.check,
-              ),
-              title: Container(height: 0.0),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.message,
-              ),
-              title: Container(height: 0.0),
-            ),
-
+            //  BottomNavigationBarItem(
+            //   icon: Icon(
+            //     Icons.check,
+            //   ),
+            //   title: Container(height: 0.0),
+            // ),
+            
+            // BottomNavigationBarItem(
+            //   icon: Icon(
+            //     Icons.home,
+            //   ),
+            //   title: Container(height: 0.0),
+            // ),
             BottomNavigationBarItem(
               icon: Icon(
                 Icons.group,
@@ -75,19 +75,21 @@ class _MainScreenState extends State<MainScreen> {
               title: Container(height: 0.0),
             ),
 
+           
             BottomNavigationBarItem(
               icon: Icon(
-                Icons.home,
+                Icons.message,
               ),
               title: Container(height: 0.0),
             ),
+            
 
-            BottomNavigationBarItem(
-              icon: IconBadge(
-                icon: Icons.notifications,
-              ),
-              title: Container(height: 0.0),
-            ),
+            // BottomNavigationBarItem(
+            //   icon: IconBadge(
+            //     icon: Icons.notifications,
+            //   ),
+            //   title: Container(height: 0.0),
+            // ),
 
             BottomNavigationBarItem(
               icon: Icon(
@@ -110,7 +112,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: 2);
+    _pageController = PageController(initialPage: 1);
   }
 
   @override

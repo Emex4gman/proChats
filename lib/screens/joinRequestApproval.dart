@@ -13,8 +13,17 @@ class JoinRequestApproval extends StatefulWidget {
   _JoinRequestApprovalState createState() => _JoinRequestApprovalState();
 }
 
-class _JoinRequestApprovalState extends State<JoinRequestApproval> {
-   
+class _JoinRequestApprovalState extends State<JoinRequestApproval>with SingleTickerProviderStateMixin,
+    AutomaticKeepAliveClientMixin {
+   TabController _tabController;
+  
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(vsync: this, initialIndex: 0, length: 2);
+  }
+
+
     updatePaymentRequestStatus(kycDocId,userId,chatId,status, period) async{
       DateTime d = Jiffy().add(days: 30);
       print('pancard hellooc ${d}');
@@ -50,17 +59,28 @@ class _JoinRequestApprovalState extends State<JoinRequestApproval> {
       appBar: AppBar(
         title: Text("MemberShip Requests"),
         centerTitle: true,
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(
-              Icons.filter_list,
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Theme.of(context).accentColor,
+          labelColor: Theme.of(context).accentColor,
+          unselectedLabelColor: Theme.of(context).textTheme.caption.color,
+          isScrollable: false,
+          tabs: <Widget>[
+            Tab(
+              text: "New Requests",
             ),
-            onPressed: (){},
-          ),
-        ],
+            Tab(
+              text: "Recent Approvals",
+            ),
+          ],
+        ),
       ),
 
-      body: Column(
+      body: 
+      TabBarView(
+        controller: _tabController,
+        children: <Widget>[
+          Column(
         children: <Widget>[
                 Expanded(
                   child:StreamBuilder(
@@ -94,27 +114,14 @@ class _JoinRequestApprovalState extends State<JoinRequestApproval> {
                         ),
                            SizedBox(height: 15,),
                           //  duration buttons
-                             Container(
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              durationTag(),
-              durationTag(),
-              durationTag(),
-              durationTag(),
-            ],
-        ),
-      ),
       // action buttions
                       Container(
         child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              _buildCircularBtn(40.0, "assets/back.png", 1,() => print('Login with Google')),
               _buildCircularBtn(70.0, "assets/hate.png", 2,() =>updatePaymentRequestStatus(snapshot.data.documents[index].documentID,ds['uid'],ds['chatId'],"Rejected", "30days")),
               _buildCircularBtn(70.0, "assets/like.png", 3,() =>updatePaymentRequestStatus(snapshot.data.documents[index].documentID,ds['uid'],ds['chatId'],"Approved", 30)),
               
-              _buildCircularBtn(40.0, "assets/list.png", 4,() => print('Login with Google')),
             ],
         ),
       ),
@@ -128,13 +135,18 @@ class _JoinRequestApprovalState extends State<JoinRequestApproval> {
               });
                 
                 }
-              return Text('Loading');
+              return Text('No New Requests');
         }
                   )
                 ),
                 
         ],
       ),
+
+      Container(child: Text("REcent logs")),
+      ]),
+  
+        
       floatingActionButton: FloatingActionButton(
         child: Icon(
           Icons.add,
@@ -196,7 +208,7 @@ class _JoinRequestApprovalState extends State<JoinRequestApproval> {
                   top: 12, bottom: 12, left: 18, right: 18),
               child: Center(
                 child: Text(
-                  "1 Month",
+                  "30 Days",
                   textAlign: TextAlign.left,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
@@ -214,4 +226,7 @@ class _JoinRequestApprovalState extends State<JoinRequestApproval> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

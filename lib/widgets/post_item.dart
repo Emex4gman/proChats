@@ -52,7 +52,7 @@ class _PostItemState extends State<PostItem> {
             Image.network(
               "${widget.img}",
               // "https://firebasestorage.googleapis.com/v0/b/teamplayers-f3b25.appspot.com/o/myimage1.jpg?alt=media&token=8b2069b9-aeb0-4c1d-a861-b7e9ab1e1dd6",
-              height: 170,
+              height: 250,
               width: MediaQuery.of(context).size.width,
               fit: BoxFit.cover,
             ),
